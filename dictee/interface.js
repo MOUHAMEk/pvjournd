@@ -6,7 +6,7 @@ const PVVC_WORKER_URL = 'https://pvvc-dictee.medbahnaji44.workers.dev';
     const status = message => { $('voiceStatus').textContent=message; };
     const example=['TEST — Coffrage du voile en cours.','Équipe test : 3 personnes présentes.','Livraison de Ciment test : quantité non précisée.'];
     let recorder, stream, timer, blob, url, pending=false, mime='', controller, epoch=0;
-    let busy=false, fixture=false, day='', history=[], clarification=null, preview=[], previewRevision, lastBatch;
+    let busy=false, fixture=false, day='', history=[], clarification=null, preview=[], previewRevision, lastBatch, previewQuestion='';
     let writes=Promise.resolve(), closing=false;
     const edits=new Map();
     const operations={append:'Ajouter',replace:'Remplacer',remove:'Supprimer le passage',move:'Déplacer',set:'Modifier',increment:'Augmenter l’effectif',create:'Créer',removeRow:'Supprimer la ligne'};
@@ -41,7 +41,7 @@ const PVVC_WORKER_URL = 'https://pvvc-dictee.medbahnaji44.workers.dev';
         $('replaceAudio').hidden=!pending || !blob;
         $('applyVoice').disabled=busy || recording || !$('voiceChanges').querySelector('input:checked');
     }
-    function resetPreview() { preview=[]; edits.clear(); $('voiceChanges').replaceChildren(); controls(); }
+    function resetPreview() { preview=[]; previewQuestion=''; edits.clear(); $('voiceChanges').replaceChildren(); controls(); }
     function releaseMic() { clearInterval(timer); stream?.getTracks().forEach(t=>t.stop()); stream=null; }
     const remember = item => { history=[...history,item.slice(0,2000)].slice(-6); };
     $('openVoice').onclick=async()=>{
@@ -177,18 +177,20 @@ const PVVC_WORKER_URL = 'https://pvvc-dictee.medbahnaji44.workers.dev';
             if (!text) throw Error('Saisissez ou dictez une instruction.');
             PvVoiceOps.fieldsOK(fields);
             status('Analyse de la dictée et du rapport…');
-            const context=clarification && text.startsWith(clarification.text) ? [...history.slice(-5),clarification.question] : history;
+            const context=clarification && text.startsWith(clarification.text) ? [...history.slice(-5),('Question non résolue : '+clarification.question).slice(0,2000)] : history;
             let result=fixture?fixtureResult(fields):await post('/analyze',JSON.stringify({version:2,fields,history:context,transcript:text}),'application/json');
             if (epoch!==session) return;
             if (startRevision!==revision) throw Error('Le rapport a changé. Relancez l’analyse.');
             if (!('question' in result)) result=legacy(result,fields,text);
-            if (result.question) {
-                PvVoiceOps.validate({...result,changes:[]},fields,text);
-                status('Précision demandée · '+result.question+' Ajoutez votre réponse à la dictée.');
-                clarification={text,question:result.question};save();return;
-            }
+            PvVoiceOps.validate(result,fields,text);
             status('Organisation des informations…');
-            draw(assistantPlan(result,text,$('voiceExtended').checked));
+            const plan=assistantPlan(result,text,$('voiceExtended').checked);
+            draw(plan);
+            previewQuestion=result.question || '';
+            if (previewQuestion) {
+                clarification={text,question:previewQuestion};save();
+                status((plan.length?'Les propositions certaines peuvent être validées. ': '')+'Précision demandée · '+previewQuestion+' Ajoutez votre réponse à la dictée.');
+            } else { clarification=null;save(); }
         } catch(e) { if (epoch===session) status(e.message); }
         finally { if (epoch===session) {busy=false;controls();} }
     }
@@ -268,9 +270,11 @@ const PVVC_WORKER_URL = 'https://pvvc-dictee.medbahnaji44.workers.dev';
             if (plan.length!==selected.length || plan.some((p,i)=>p.field.node!==selected[i].field.node || p.writes.some((w,j)=>w.before!==selected[i].writes[j]?.before))) throw Error('La sélection change le résultat affiché. Précisez ces opérations séparément.');
             lastBatch=applyAssistant(plan,extended);
             remember('Instruction validée : '+transcript.value+'\nChamps appliqués : '+plan.map(p=>p.field.section+' / '+(p.change.rowLabel||p.field.label)+' ('+p.field.id+') '+p.change.value).join(' ; '));
-            transcript.value='';clarification=null;save();$('undoVoice').hidden=false;
+            const remainingQuestion=previewQuestion;
+            transcript.value='';clarification=remainingQuestion?{text:'',question:remainingQuestion}:null;save();$('undoVoice').hidden=false;
             $('voiceResult').textContent='Validation réussie · '+plan.length+' modification(s). Vous pouvez dicter la suite.';
-            dialog.close();
+            if (remainingQuestion) { resetPreview(); status('Modifications sélectionnées enregistrées. Précision restante · '+remainingQuestion+' Dictez uniquement la réponse ou une nouvelle instruction.'); transcript.focus(); }
+            else dialog.close();
         } catch(e) {status(e.message);}
     };
     $('undoVoice').onclick=()=>{

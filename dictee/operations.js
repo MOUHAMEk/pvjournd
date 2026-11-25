@@ -24,6 +24,9 @@
     for (const [fr, values] of Object.entries(PvVoiceLexique.travaux)) {
         for (const ar of values.split(' / ')) for (const prefix of ['','ال']) words.set(fold(prefix + ar),fr);
     }
+    for (const [fr, variants] of Object.entries(PvVoiceLexique.variantesFR || {})) {
+        for (const term of variants.split(' / ')) words.set(fold(term),fr);
+    }
     for (const word of ['طنان','طنين']) words.set(word,'2 tonnes');
     const pattern = new RegExp('(^|[^\\p{L}\\p{N}])(' + [...words.keys()].sort((a,b)=>b.length-a.length).join('|') + ')(?![\\p{L}\\p{N}])','gu');
     function normalized(s) {

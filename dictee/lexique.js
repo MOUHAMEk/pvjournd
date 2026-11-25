@@ -11,6 +11,7 @@ globalThis.PvVoiceLexique = {
         'sacs':'أكياس', 'sac':'كيس', 'tonnes':'أطنان', 'tonne':'طن', 'litres':'لترات',
         'mètres cubes':'أمتار مكعبة', 'suffisant':'كاف / كافي', 'épuisé':'نفد'
     },
+    variantesFR: { 'manœuvres':'mandèvres / mandevres / mandeuvres / manœvres / manoeuvres', 'manœuvre':'mandèvre / mandevre / manoeuvre' },
     // Attestations mauritaniennes du Gret, programme Twize, annexe 2.
     hassaniya: {
         'beït / بيت':'chambre ou maison, préciser selon le contexte',
