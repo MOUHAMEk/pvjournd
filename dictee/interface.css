@@ -1,0 +1,39 @@
+.voice-tools,.voice-actions,.voice-heading,.voice-recorder { display:flex; align-items:center; flex-wrap:wrap; gap:10px; }
+.voice-tools { margin:0 0 20px; }
+.voice-tools [hidden],#voiceDialog [hidden] { display:none !important; }
+#voiceDialog { width:min(620px,calc(100% - 24px)); max-height:88dvh; padding:clamp(17px,4vw,30px); border:1px solid var(--line); border-radius:var(--radius); color:var(--ink); box-shadow:0 20px 70px #142b3a35; }
+#voiceDialog::backdrop { background:#142b3a88; }
+.voice-heading { justify-content:space-between; }
+.voice-mode { color:#365b62; background:var(--mint); border-radius:8px; padding:10px 13px; font-size:13px; margin:15px 0; }
+.voice-recorder { border:1px solid var(--line); border-radius:12px; padding:14px; }
+.voice-recorder button { margin-left:auto; }
+.voice-mic { width:38px; height:38px; border-radius:50%; background:var(--mint); color:var(--teal); }
+.recording .voice-mic { background:#fdebed; color:#ad3446; animation:voicePulse 1.3s ease-out infinite; }
+@keyframes voicePulse { from { box-shadow:0 0 0 0 #c9516038; } to { box-shadow:0 0 0 10px transparent; } }
+@media (prefers-reduced-motion:reduce) { .recording .voice-mic { animation:none; } }
+#recTime { font-variant-numeric:tabular-nums; }
+.voice-actions { margin:14px 0; }
+#voicePlayback { width:100%; margin-top:12px; }
+#voiceAccess { display:block; width:100%; padding:10px; border:1px solid var(--line); border-radius:7px; }
+#voiceDialog button:disabled { cursor:default; }
+#voiceDialog h3 { margin:20px 0 10px; }
+#voiceChanges { display:grid; gap:8px; }
+#voiceChanges label { display:grid; grid-template-columns:auto minmax(0,1fr); gap:3px 8px; padding:12px; margin:0; border:1px solid var(--line); border-radius:8px; }
+#voiceChanges label span { grid-column:2; white-space:pre-wrap; overflow-wrap:anywhere; font-weight:400; }
+#voiceChanges small { grid-column:2; font-weight:400; overflow-wrap:anywhere; }
+#voiceStatus,#voiceResult { color:#3d6168; font-size:13px; }
+.voice-permission { display:flex; align-items:center; gap:6px; margin:12px 0 0; font-weight:400; }
+.voice-options { margin:12px 0; }
+.voice-options summary { cursor:pointer; color:var(--teal); }
+#voiceDialog { box-sizing:border-box; max-height:90vh; max-height:90dvh; overflow-y:auto; overscroll-behavior:contain; }
+#voiceDialog textarea { width:100%; box-sizing:border-box; }
+#voiceChanges article { border:1px solid var(--line); border-radius:9px; padding:12px; min-width:0; }
+#voiceChanges article label { border:0; padding:0; }
+#voiceChanges article p { white-space:pre-wrap; overflow-wrap:anywhere; font-size:14px; }
+#voiceChanges article small { display:block; }
+#voiceChanges textarea { min-height:64px; }
+#saveAudio { display:inline-block; margin:6px 0; }
+#voiceStorage { color:#864113; }
+#voiceDialog .voice-footer { position:sticky; bottom:-1px; background:white; padding:8px 0 max(8px,env(safe-area-inset-bottom)); border-top:1px solid var(--line); }
+@media (max-height:500px) { #voiceDialog .voice-footer { position:static; } }
+@media (max-width:480px) { .voice-recorder button { width:100%; } .voice-actions button { flex:1 1 100%; } }
